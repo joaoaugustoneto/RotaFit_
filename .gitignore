@@ -1,0 +1,5 @@
+node_modules
+# Segredos locais
+.env
+.env.*
+!.env.example
