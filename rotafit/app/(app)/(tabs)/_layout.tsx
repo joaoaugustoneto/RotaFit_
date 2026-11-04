@@ -8,7 +8,7 @@ import type { IconName } from '@/utils/icons';
 
 function tabIcon(name: IconName) {
   return ({ color, size }: { color: ColorValue; size: number }) => (
-    <Ionicons name={name} size={size} color={color} />
+    <Ionicons name={name} size={size} color={typeof color === 'string' ? color : undefined} />
   );
 }
 
