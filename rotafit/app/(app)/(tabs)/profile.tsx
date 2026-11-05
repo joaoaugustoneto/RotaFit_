@@ -1,5 +1,5 @@
 import Constants from 'expo-constants';
-import { Alert, Image, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { ThemePicker } from '@/components/ThemePicker';
@@ -27,16 +27,27 @@ export default function ProfileScreen() {
   }
 
   return (
-    <View style={[styles.screen]}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      contentContainerStyle={[
+        styles.screen,
+        { maxWidth: 540, width: '100%', alignSelf: 'center' },
+      ]}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text style={[styles.title, { color: theme.text, marginTop: spacing.xl }]}>
         Perfil
       </Text>
       <Card style={styles.card}>
-        <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
-          <Text style={[styles.avatarText, { color: theme.onPrimary }]}>
-            {name.charAt(0).toUpperCase()}
-          </Text>
-        </View>
+        {avatarUrl ? (
+          <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+        ) : (
+          <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
+            <Text style={[styles.avatarText, { color: theme.onPrimary }]}>
+              {name.charAt(0).toUpperCase()}
+            </Text>
+          </View>
+        )}
         <Text style={[styles.name, { color: theme.text }]}>{name}</Text>
         <Text style={[styles.email, { color: theme.muted }]}>{user?.email}</Text>
       </Card>
@@ -71,12 +82,12 @@ export default function ProfileScreen() {
       <Text style={[styles.version, { color: theme.muted }]}>
         RotaFit v{Constants.expoConfig?.version ?? '1.0.0'}
       </Text>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, padding: spacing.md, gap: spacing.md },
+  screen: { padding: spacing.md, paddingBottom: 120, gap: spacing.md },
   title: { fontSize: 28, fontWeight: '800', marginBottom: spacing.sm },
   card: { alignItems: 'center', gap: 2 },
   avatar: {

@@ -44,5 +44,11 @@ export function Screen({
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  content: { padding: spacing.md, flexGrow: 1 },
+  content: {
+    padding: spacing.md,
+    flexGrow: 1,
+    maxWidth: 540,
+    width: '100%',
+    alignSelf: 'center',
+  },
 });

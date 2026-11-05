@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlassSurface } from '@/components/glass/GlassSurface';
 import { radius, spacing, useTheme } from '@/theme';
 import type { ThemePreference } from '@/theme';
@@ -25,7 +25,11 @@ export function ThemePicker() {
               accessibilityRole="button"
               accessibilityState={{ selected }}
               onPress={() => setPreference(opt.value)}
-              style={[styles.segment, selected && { backgroundColor: theme.primary }]}
+              style={[
+                styles.segment,
+                selected && { backgroundColor: theme.primary },
+                Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : undefined,
+              ]}
             >
               <Text
                 style={[styles.label, { color: selected ? theme.onPrimary : theme.text }]}

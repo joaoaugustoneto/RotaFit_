@@ -35,6 +35,7 @@ export default function HistoryScreen() {
 
   return (
     <FlatList
+      style={{ flex: 1, backgroundColor: theme.background }}
       data={data ?? []}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.content}
@@ -108,6 +109,9 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
     flexGrow: 1,
     gap: spacing.sm,
+    maxWidth: 540,
+    width: '100%',
+    alignSelf: 'center',
   },
   title: { fontSize: 28, fontWeight: '800', marginBottom: spacing.sm },
   card: { marginBottom: spacing.sm },

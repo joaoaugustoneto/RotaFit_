@@ -1,4 +1,5 @@
 import * as AuthSession from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
 import {
   createContext,
   useCallback,
@@ -9,9 +10,12 @@ import {
   useState,
 } from 'react';
 import type { ReactNode } from 'react';
+import { Platform } from 'react-native';
 import { deleteSecureItem, getSecureItem, setSecureItem } from '@/lib/secureStore';
 import { SPOTIFY_SCOPES, spotifyClientId, spotifyDiscovery } from '@/lib/spotify';
 import type { SpotifyTokens } from '@/types';
+
+WebBrowser.maybeCompleteAuthSession();
 
 const STORE_KEY = 'rotafit.spotify.tokens';
 
@@ -25,10 +29,16 @@ interface SpotifyContextValue {
 
 const SpotifyContext = createContext<SpotifyContextValue | undefined>(undefined);
 
-const redirectUri = AuthSession.makeRedirectUri({
+const baseRedirectUri = AuthSession.makeRedirectUri({
   scheme: 'rotafit',
   path: 'spotify-auth',
 });
+
+// O Spotify proíbe "localhost" (RFC 8252) e exige endereço loopback IPv4/IPv6 explícito (127.0.0.1 ou [::1]).
+const redirectUri =
+  Platform.OS === 'web' && typeof window !== 'undefined'
+    ? baseRedirectUri.replace('//localhost', '//127.0.0.1')
+    : baseRedirectUri;
 
 async function saveTokens(tokens: SpotifyTokens) {
   await setSecureItem(STORE_KEY, JSON.stringify(tokens));
@@ -89,6 +99,7 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
 
   const connect = useCallback(() => {
     setConnecting(true);
+    console.log('[Spotify] Conectando com redirectUri:', redirectUri);
     promptAsync().catch(() => setConnecting(false));
   }, [promptAsync]);
 

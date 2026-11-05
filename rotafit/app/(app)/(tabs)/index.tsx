@@ -20,11 +20,14 @@ export default function HomeScreen() {
 
   return (
     <ScrollView
+      style={{ flex: 1, backgroundColor: theme.background }}
       contentContainerStyle={styles.content}
       refreshControl={
         <RefreshControl
           refreshing={isRefetching}
-          onRefresh={refetch}
+          onRefresh={() => {
+            refetch();
+          }}
           tintColor={theme.primary}
         />
       }
@@ -102,6 +105,9 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xl,
     paddingBottom: 120,
     gap: spacing.md,
+    maxWidth: 540,
+    width: '100%',
+    alignSelf: 'center',
   },
   greeting: { fontSize: 15 },
   title: { fontSize: 28, fontWeight: '800', marginBottom: spacing.sm },

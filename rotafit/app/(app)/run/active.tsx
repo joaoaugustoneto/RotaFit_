@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlassSurface, glassShadow } from '@/components/glass/GlassSurface';
 import { RoutePath } from '@/components/RoutePath';
 import { SpotifyPlayerCard } from '@/components/spotify/SpotifyPlayerCard';
@@ -142,7 +142,11 @@ export default function ActiveRunScreen() {
             tint={theme.danger}
           />
         </View>
-        <Pressable accessibilityRole="button" onPress={handleDiscard}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={handleDiscard}
+          style={Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : undefined}
+        >
           <Text style={[styles.discard, { color: theme.muted }]}>Descartar corrida</Text>
         </Pressable>
       </View>

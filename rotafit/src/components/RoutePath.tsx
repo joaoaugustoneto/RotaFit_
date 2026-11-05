@@ -89,7 +89,12 @@ export function RoutePath({ route, height = 240, live = false }: RoutePathProps)
 
   return (
     <GlassSurface radius={radius.lg} style={[styles.wrap, { height }]} intensity={20}>
-      <Svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`}>
+      <Svg
+        width="100%"
+        height={H}
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="xMidYMid meet"
+      >
         <Defs>
           <SvgGradient id="trail" x1="0" y1="0" x2="1" y2="1">
             <Stop offset="0" stopColor={theme.success} stopOpacity={1} />

@@ -183,37 +183,37 @@ describe('weekly_stats', () => {
   it('soma só as corridas da semana atual e só as do usuário logado', async () => {
     const now = await one('select now() as now');
     const started = now.now.toISOString();
-    
+
     await insertRun(ALICE, {
       started_at: started,
       ended_at: started,
       distance_meters: 3000,
       duration_seconds: 900,
     });
-    
+
     await insertRun(ALICE, {
       started_at: started,
       ended_at: started,
       distance_meters: 2000,
       duration_seconds: 600,
     });
-    
+
     await insertRun(BOB, {
       started_at: started,
       ended_at: started,
       distance_meters: 9000,
       duration_seconds: 2700,
     });
-    
+
     await insertRun(ALICE, {
       started_at: '2020-01-01T10:00:00Z',
       ended_at: '2020-01-01T10:10:00Z',
     }); // fora da semana
-    
+
     const alice = await as(ALICE, () => one('select * from weekly_stats()'));
     assert.equal(Number(alice.total_distance_meters), 5000);
     assert.equal(Number(alice.run_count), 2);
-    
+
     const bob = await as(BOB, () => one('select * from weekly_stats()'));
     assert.equal(Number(bob.total_distance_meters), 9000);
     assert.equal(Number(bob.run_count), 1);
