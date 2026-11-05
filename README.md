@@ -1,76 +1,110 @@
 # RotaFit
 
-App de corrida com GPS: registra a rota, a distância, o tempo e o ritmo de cada
-corrida, com tema claro e escuro e um player do Spotify para tocar música
-durante o treino.
+Aplicativo móvel para monitoramento de corridas e caminhadas com GPS, desenvolvido com React Native, Expo e TypeScript. A aplicação integra autenticação segura via Supabase, controle de reprodução com a API do Spotify e renderização vetorial de trajetos.
 
-## Funcionalidades
+<p align="center">
+  <img src="docs/screenshots/login.png" width="30%" alt="Tela de Login" />
+  <img src="docs/screenshots/home.png" width="30%" alt="Tela de Inicio" />
+  <img src="docs/screenshots/profile.png" width="30%" alt="Tela de Perfil" />
+</p>
 
-- Login com **Google** (Supabase Auth, sem senha própria)
-- Corrida com GPS: distância, tempo, ritmo e traçado da rota em tempo real
-- Pausar, retomar, finalizar e descartar uma corrida
-- Histórico de corridas e resumo de cada uma (com o traçado)
-- Estatísticas da semana (distância, tempo, número de corridas)
-- **Spotify**: login OAuth (PKCE), tocando agora, tocar/pausar, próxima/anterior
-- **Tema claro e escuro**, com persistência: claro em Milano Red + Lemon
-  Chiffon, escuro inspirado no Flamengo
-- Interface em **Liquid Glass**: superfícies translúcidas com blur, brilho e
-  borda, no app inteiro
+## Recursos
+
+- **Monitoramento em tempo real**: Registro contínuo de distância, tempo decorrido, ritmo médio por quilômetro e traçado do percurso.
+- **Cálculo de gasto energético**: Estimativa de calorias calculada com base no tempo de atividade e no peso corporal configurado no perfil.
+- **Metas semanais**: Definição de objetivos de distância semanal com acompanhamento visual por barra de progresso.
+- **Integração com Spotify**: Conexão OAuth com fluxo PKCE para exibição da faixa em reprodução e comandos de controle musical durante a corrida.
+- **Visualização de rota em SVG**: Algoritmo geométrico que projeta as coordenadas geográficas em curvas Bézier suaves, sem necessidade de provedores comerciais de mapas.
+- **Suporte a temas**: Modos claro e escuro persistidos no aparelho, construídos sobre o padrão visual Liquid Glass com desfoque e transparências.
+- **Autenticação centralizada**: Acesso simplificado com conta Google por meio do Supabase Auth.
 
 ## Tecnologias
 
-React Native · Expo · Expo Router · TypeScript · Supabase (Auth com Google,
-Postgres, RLS) · TanStack Query · expo-location · expo-auth-session (Spotify) ·
-expo-blur / expo-linear-gradient (Liquid Glass) · react-native-svg (traçado da
-rota) · Jest · PGlite (testes do banco)
+- **Framework**: React Native 0.76 com Expo SDK 52 (Expo Router v4)
+- **Linguagem**: TypeScript com tipagem estrita
+- **Backend e Banco de Dados**: Supabase (PostgreSQL 15 com Row Level Security)
+- **Gerenciamento de Estado de Rede**: TanStack React Query v5
+- **Armazenamento Local**: Expo SecureStore para tokens de autenticação e AsyncStorage para preferências de usuário
+- **Localização e Sensores**: Expo Location com controle de precisão e filtro de saltos de GPS
+- **Testes Automatizados**: Jest para regras de negócio do app e PGlite para testes do banco de dados em ambiente local isolado
+- **Integracao Continua**: GitHub Actions para checagem estatica de tipos e execucao da suite de testes
 
-## Como executar
+## Arquitetura do Projeto
 
-1. Instale as dependências: `pnpm install`
-2. Crie um projeto no [Supabase](https://supabase.com) e execute
-   `supabase/schema.sql` no SQL Editor.
-3. Em **Authentication → Providers → Google**, ative o provedor Google (veja o
-   guia para o passo a passo, gratuito, no Google Cloud Console).
-4. Crie um app em [developer.spotify.com](https://developer.spotify.com) para
-   obter o Client ID (gratuito).
-5. Copie `.env.example` para `.env` e preencha os três valores.
-6. Inicie o app: `pnpm start` e abra no Expo Go (iOS ou Android — este
-   projeto não roda no navegador, por causa do GPS).
-
-## Sem custo, de ponta a ponta
-
-Nenhuma etapa deste projeto exige cartão de crédito: login pelo Google, banco
-Supabase, Spotify e o traçado da rota (desenhado à mão em SVG, sem mapa pago)
-usam apenas os planos gratuitos de cada serviço.
-
-## Testes
-
-| Comando | O que testa |
-| --- | --- |
-| `pnpm test` | Tudo: app (Jest) e banco (PGlite) |
-| `pnpm run test:app` | Cálculos de rota/ritmo e a máquina de estados da corrida |
-| `pnpm run test:db` | RLS, permissões e a função `weekly_stats` |
-
-O teste do banco usa o PGlite (Postgres real dentro do Node), com o mesmo
-`schema.sql` do Supabase, sem Docker.
-
-## Arquitetura
+O código está organizado seguindo separação clara de responsabilidades entre regras de negócio, serviços de infraestrutura e componentes de interface.
 
 ```
-app/          rotas (Expo Router)
-src/
-  components/ interface, incluindo os componentes "glass/" (Liquid Glass)
-  context/    sessão (Google), tema e Spotify
-  hooks/      corridas, player do Spotify e o rastreador de GPS
-  lib/        Supabase, login Google e Spotify
-  services/   acesso ao Supabase
-  theme/      tokens de cor (claro/escuro) e o ThemeProvider
-  utils/      geolocalização, máquina de estados da corrida — cobertos por testes
-supabase/
-  schema.sql  banco, RLS e a função weekly_stats
-  tests/      testes do banco
+rotafit/
+├── app/                  # Rotas e navegação baseada em arquivos (Expo Router)
+│   ├── (auth)/           # Fluxo de login e autenticação
+│   ├── (app)/            # Telas autenticadas
+│   │   ├── (tabs)/       # Navegação inferior (Inicio, Historico, Perfil)
+│   │   └── run/          # Telas de corrida ativa e detalhe de percurso
+│   └── _layout.tsx       # Provedores globais de tema, autenticação e cache
+├── src/
+│   ├── components/       # Componentes visuais reutilizáveis e elementos de vidro
+│   ├── context/          # Provedores de contexto React (Auth, Spotify)
+│   ├── hooks/            # Hooks customizados para regras de corrida e APIs
+│   ├── lib/              # Clientes de serviços externos (Supabase, Spotify)
+│   ├── services/         # Camada de comunicação com endpoints do banco
+│   ├── theme/            # Tokens tipados de cores, espaçamentos e ThemeProvider
+│   └── utils/            # Funções puras de cálculo geodésico, calorias e alertas
+└── supabase/
+    ├── schema.sql        # Modelagem relacional, tabelas, políticas RLS e funções RPC
+    └── tests/            # Testes de integração do banco de dados executados com PGlite
 ```
 
-## Autor
+## Como Executar
 
+### Pré-requisitos
 
+- Node.js 20 ou superior
+- Gerenciador de pacotes pnpm instalado globalmente (`npm install -g pnpm`)
+- Aplicativo Expo Go instalado em dispositivo móvel (iOS ou Android) para testes nativos, ou navegador web para execução local
+
+### 1. Clonar e instalar dependências
+
+```bash
+git clone https://github.com/jhones04/RotaFit.git
+cd RotaFit/rotafit
+pnpm install
+```
+
+### 2. Configurar variáveis de ambiente
+
+Crie um arquivo `.env` na pasta `rotafit` baseado no arquivo de exemplo `.env.example`:
+
+```env
+EXPO_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
+EXPO_PUBLIC_SUPABASE_KEY=sua-chave-anon-publica
+EXPO_PUBLIC_SPOTIFY_CLIENT_ID=seu-client-id-do-spotify
+```
+
+### 3. Configurar o banco de dados
+
+Execute as instruções contidas em `supabase/schema.sql` no painel SQL do seu projeto no Supabase para criar a tabela de corridas, índices de busca, políticas RLS de segurança e a função agregadora `weekly_stats`.
+
+### 4. Iniciar o servidor de desenvolvimento
+
+```bash
+pnpm start
+```
+
+Pressione `w` no terminal para abrir no navegador, ou aponte a câmera do celular para o código QR exibido no terminal utilizando o aplicativo Expo Go.
+
+## Estratégia de Testes
+
+O projeto conta com automação de testes cobrindo regras de negócio puras e regras de segurança do banco relacional.
+
+| Comando | Escopo | Ferramenta |
+| :--- | :--- | :--- |
+| `pnpm typecheck` | Checagem estática de tipos em todo o projeto | TypeScript Compiler (`tsc`) |
+| `pnpm test` | Execução completa de todos os testes unitários e de banco | Jest + Node Test Runner |
+| `pnpm run test:app` | Funções de geolocalização, ritmo, calorias e máquina de estados | Jest |
+| `pnpm run test:db` | Políticas RLS, restrições relacionais e agregações SQL | PGlite (PostgreSQL em memória) |
+
+A suíte do banco de dados utiliza o PGlite para subir uma instância real do PostgreSQL dentro do processo Node.js em milissegundos, garantindo que as regras de isolamento entre usuários sejam validadas em ambiente de desenvolvimento sem dependência de containers Docker ou conexão externa à internet.
+
+## Pipeline de Integração Contínua
+
+O repositório possui uma rotina configurada no GitHub Actions (`.github/workflows/ci.yml`) que valida a integridade do código a cada envio para o branch principal ou abertura de pull request. O fluxo realiza a checagem de tipos estáticos e roda a suíte de testes ponta a ponta.
