@@ -1,13 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { RoutePath } from '@/components/RoutePath';
 import { Screen } from '@/components/Screen';
 import { ErrorState, LoadingView } from '@/components/StateViews';
 import { useDeleteRun, useRun } from '@/hooks/useRuns';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { spacing, useTheme } from '@/theme';
+import { showAlert } from '@/utils/alert';
 import {
   estimateCalories,
   formatDistance,
@@ -24,6 +26,7 @@ export default function RunDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { theme } = useTheme();
+  const { preferences } = useUserPreferences();
   const { data: run, isLoading, isError, error, refetch } = useRun(id);
   const del = useDeleteRun();
 
@@ -32,7 +35,7 @@ export default function RunDetailScreen() {
     return <ErrorState message={friendlyError(error)} onRetry={refetch} />;
 
   function confirmDelete() {
-    Alert.alert('Excluir corrida', 'Esta ação não pode ser desfeita.', [
+    showAlert('Excluir corrida', 'Esta ação não pode ser desfeita.', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Excluir',
@@ -40,7 +43,7 @@ export default function RunDetailScreen() {
         onPress: () =>
           del.mutate(run!.id, {
             onSuccess: () => router.back(),
-            onError: (e) => Alert.alert('Não foi possível excluir', friendlyError(e)),
+            onError: (e) => showAlert('Não foi possível excluir', friendlyError(e)),
           }),
       },
     ]);
@@ -65,7 +68,7 @@ export default function RunDetailScreen() {
           <Stat label="Ritmo médio" value={formatPace(run.avgPaceSecPerKm)} />
           <Stat
             label="Calorias"
-            value={`${estimateCalories(run.distanceMeters, run.durationSeconds)} kcal`}
+            value={`${estimateCalories(run.distanceMeters, run.durationSeconds, preferences.weightKg)} kcal`}
           />
         </View>
       </Card>

@@ -3,20 +3,28 @@ import { useRouter } from 'expo-router';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { ProgressBar } from '@/components/ProgressBar';
 import { SpotifyPlayerCard } from '@/components/spotify/SpotifyPlayerCard';
 import { useAuth } from '@/context/AuthContext';
-import { useWeeklyStats } from '@/hooks/useRuns';
+import { useRuns, useWeeklyStats } from '@/hooks/useRuns';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { spacing, useTheme } from '@/theme';
 import { formatDistance, formatDuration } from '@/utils/geo';
+import { calculateWeeklyGoalProgress } from '@/utils/goals';
 import { greetingForHour } from '@/utils/greeting';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const { user } = useAuth();
+  const { preferences } = useUserPreferences();
   const { data: stats, isLoading, refetch, isRefetching } = useWeeklyStats();
   const firstName = String(user?.user_metadata?.full_name ?? '').split(' ')[0];
   const greeting = greetingForHour(new Date().getHours());
+  const goal = calculateWeeklyGoalProgress(
+    stats?.totalDistanceMeters ?? 0,
+    preferences.weeklyGoalKm,
+  );
 
   return (
     <ScrollView
@@ -43,19 +51,28 @@ export default function HomeScreen() {
         {isLoading ? (
           <Text style={{ color: theme.muted }}>Carregando...</Text>
         ) : (
-          <View style={styles.statsRow}>
-            <Stat
-              icon="navigate"
-              label="Distância"
-              value={formatDistance(stats?.totalDistanceMeters ?? 0)}
+          <>
+            <View style={styles.statsRow}>
+              <Stat
+                icon="navigate"
+                label="Distância"
+                value={formatDistance(stats?.totalDistanceMeters ?? 0)}
+              />
+              <Stat
+                icon="time"
+                label="Tempo"
+                value={formatDuration(stats?.totalDurationSeconds ?? 0)}
+              />
+              <Stat icon="flame" label="Corridas" value={String(stats?.runCount ?? 0)} />
+            </View>
+
+            <ProgressBar
+              progress={goal.percent}
+              label="Meta semanal"
+              detail={`${goal.currentKm.toFixed(1).replace('.', ',')} de ${goal.goalKm} km (${goal.percent}%)`}
+              completed={goal.isCompleted}
             />
-            <Stat
-              icon="time"
-              label="Tempo"
-              value={formatDuration(stats?.totalDurationSeconds ?? 0)}
-            />
-            <Stat icon="flame" label="Corridas" value={String(stats?.runCount ?? 0)} />
-          </View>
+          </>
         )}
       </Card>
 

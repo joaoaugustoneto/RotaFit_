@@ -1,27 +1,39 @@
+import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Image,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { ThemePicker } from '@/components/ThemePicker';
 import { useAuth } from '@/context/AuthContext';
 import { useSpotify } from '@/context/SpotifyContext';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { spacing, useTheme } from '@/theme';
+import { showAlert } from '@/utils/alert';
 import { friendlyError } from '@/utils/errors';
 
 export default function ProfileScreen() {
   const { theme } = useTheme();
   const { user, signOut } = useAuth();
   const { tokens, connect, disconnect, connecting } = useSpotify();
+  const { preferences, updatePreferences } = useUserPreferences();
   const name = String(user?.user_metadata?.full_name ?? 'Usuário');
   const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
 
   function confirmSignOut() {
-    Alert.alert('Sair', 'Deseja encerrar a sessão?', [
+    showAlert('Sair', 'Deseja encerrar a sessão?', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Sair',
         style: 'destructive',
-        onPress: () => signOut().catch((e) => Alert.alert('Erro', friendlyError(e))),
+        onPress: () => signOut().catch((e) => showAlert('Erro', friendlyError(e))),
       },
     ]);
   }
@@ -54,6 +66,103 @@ export default function ProfileScreen() {
 
       <Text style={[styles.sectionTitle, { color: theme.muted }]}>APARÊNCIA</Text>
       <ThemePicker />
+
+      <Text style={[styles.sectionTitle, { color: theme.muted }]}>METAS E CORPO</Text>
+      <Card style={styles.settingsCard}>
+        <View style={styles.settingRow}>
+          <View style={styles.settingInfo}>
+            <Text style={[styles.settingLabel, { color: theme.text }]}>Peso</Text>
+            <Text style={[styles.settingDesc, { color: theme.muted }]}>
+              Para cálculo preciso de calorias
+            </Text>
+          </View>
+          <View style={styles.stepper}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Diminuir peso"
+              onPress={() =>
+                updatePreferences({
+                  weightKg: Math.max(30, preferences.weightKg - 1),
+                })
+              }
+              style={[
+                styles.stepperBtn,
+                { backgroundColor: theme.primarySoft },
+                Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : undefined,
+              ]}
+            >
+              <Ionicons name="remove" size={18} color={theme.primary} />
+            </Pressable>
+            <Text style={[styles.stepperValue, { color: theme.text }]}>
+              {preferences.weightKg} kg
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Aumentar peso"
+              onPress={() =>
+                updatePreferences({
+                  weightKg: Math.min(250, preferences.weightKg + 1),
+                })
+              }
+              style={[
+                styles.stepperBtn,
+                { backgroundColor: theme.primarySoft },
+                Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : undefined,
+              ]}
+            >
+              <Ionicons name="add" size={18} color={theme.primary} />
+            </Pressable>
+          </View>
+        </View>
+
+        <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+        <View style={styles.settingRow}>
+          <View style={styles.settingInfo}>
+            <Text style={[styles.settingLabel, { color: theme.text }]}>Meta semanal</Text>
+            <Text style={[styles.settingDesc, { color: theme.muted }]}>
+              Objetivo de corrida da semana
+            </Text>
+          </View>
+          <View style={styles.stepper}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Diminuir meta semanal"
+              onPress={() =>
+                updatePreferences({
+                  weeklyGoalKm: Math.max(5, preferences.weeklyGoalKm - 5),
+                })
+              }
+              style={[
+                styles.stepperBtn,
+                { backgroundColor: theme.primarySoft },
+                Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : undefined,
+              ]}
+            >
+              <Ionicons name="remove" size={18} color={theme.primary} />
+            </Pressable>
+            <Text style={[styles.stepperValue, { color: theme.text }]}>
+              {preferences.weeklyGoalKm} km
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Aumentar meta semanal"
+              onPress={() =>
+                updatePreferences({
+                  weeklyGoalKm: Math.min(200, preferences.weeklyGoalKm + 5),
+                })
+              }
+              style={[
+                styles.stepperBtn,
+                { backgroundColor: theme.primarySoft },
+                Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : undefined,
+              ]}
+            >
+              <Ionicons name="add" size={18} color={theme.primary} />
+            </Pressable>
+          </View>
+        </View>
+      </Card>
 
       <Text style={[styles.sectionTitle, { color: theme.muted }]}>SPOTIFY</Text>
       <Card style={styles.card}>
@@ -107,6 +216,25 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
     marginTop: spacing.sm,
   },
+  settingsCard: { gap: spacing.md, paddingVertical: spacing.md },
+  settingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  settingInfo: { flex: 1, gap: 2 },
+  settingLabel: { fontSize: 15, fontWeight: '700' },
+  settingDesc: { fontSize: 12 },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  stepperBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepperValue: { fontSize: 15, fontWeight: '800', minWidth: 58, textAlign: 'center' },
+  divider: { height: 1, width: '100%' },
   signOut: { marginTop: spacing.md },
   version: { textAlign: 'center', fontSize: 12, marginTop: spacing.sm },
 });

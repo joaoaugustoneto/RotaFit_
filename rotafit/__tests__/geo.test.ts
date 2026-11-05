@@ -96,6 +96,12 @@ describe('estimateCalories', () => {
       estimateCalories(5000, 1800, 70),
     );
   });
+
+  it('considera o peso do usuário: maior peso consome mais calorias no mesmo tempo', () => {
+    const calLeve = estimateCalories(5000, 3600, 60);
+    const calPesado = estimateCalories(5000, 3600, 85);
+    expect(calPesado).toBeGreaterThan(calLeve);
+  });
 });
 
 describe('simplifyRoute', () => {

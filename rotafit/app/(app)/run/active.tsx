@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GlassSurface, glassShadow } from '@/components/glass/GlassSurface';
 import { RoutePath } from '@/components/RoutePath';
 import { SpotifyPlayerCard } from '@/components/spotify/SpotifyPlayerCard';
@@ -9,6 +9,7 @@ import { useNowPlaying } from '@/hooks/useSpotifyPlayer';
 import { useRunTracker } from '@/hooks/useRunTracker';
 import { useSaveRun } from '@/hooks/useRuns';
 import { radius, spacing, useTheme } from '@/theme';
+import { showAlert } from '@/utils/alert';
 import { friendlyError } from '@/utils/errors';
 import { formatDistance, formatDuration, formatPace } from '@/utils/geo';
 
@@ -28,7 +29,7 @@ export default function ActiveRunScreen() {
     const ok = await tracker.start();
     setStarting(false);
     if (!ok) {
-      Alert.alert(
+      showAlert(
         'Permissão de localização necessária',
         'O RotaFit precisa da sua localização para registrar a rota da corrida. ' +
           'Ative a permissão nas configurações do aparelho.',
@@ -37,7 +38,7 @@ export default function ActiveRunScreen() {
   }
 
   function handleFinish() {
-    Alert.alert('Finalizar corrida', 'Deseja encerrar e salvar esta corrida?', [
+    showAlert('Finalizar corrida', 'Deseja encerrar e salvar esta corrida?', [
       { text: 'Continuar correndo', style: 'cancel' },
       {
         text: 'Finalizar',
@@ -52,7 +53,7 @@ export default function ActiveRunScreen() {
           }
           saveRun.mutate(input, {
             onSuccess: (id) => router.replace(`/run/${id}`),
-            onError: (e) => Alert.alert('Não foi possível salvar', friendlyError(e)),
+            onError: (e) => showAlert('Não foi possível salvar', friendlyError(e)),
           });
         },
       },
@@ -60,7 +61,7 @@ export default function ActiveRunScreen() {
   }
 
   function handleDiscard() {
-    Alert.alert('Descartar corrida', 'Os dados desta corrida serão perdidos.', [
+    showAlert('Descartar corrida', 'Os dados desta corrida serão perdidos.', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Descartar',
